@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PENA HALUT - Aplikasi Pelaporan</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS (Library Excel) -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>    
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .gradient-header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+        .form-section-title {
+            position: relative;
+        }
+        .form-section-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -6px;
+            width: 40px;
+            height: 3px;
+            background-color: #3b82f6;
+            border-radius: 2px;
+        }
+        /* Custom scrollbar for searchable dropdown */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Styling khusus tab aktif disesuaikan dengan tema cerah */
+        .nav-btn.active {
+            background-color: #ffffff;
+            color: #0284c7; /* text-sky-600 */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen py-4 px-3 sm:px-6 lg:px-8">
+
+    <!-- Main Navbar Navigation Header (Diperbarui dengan latar menarik & cerah) -->
+    <header class="max-w-5xl mx-auto mb-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl p-3 sm:p-4 shadow-xl border border-blue-400/50 flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-2 z-40 backdrop-blur-md bg-opacity-95">
+        <div class="flex items-center gap-3">
+            <!-- Icon pena diganti menjadi fa-pen-fancy dan latar diubah agar kontras -->
+           
+            <div>
+                <h1 class="text-lg font-black tracking-tight text-white flex items-center gap-2">
+                    Laporan 2026
+                
+               
+            </div>
+        </div>
+
+        <!-- Navigation Tabs Switcher (Tombol beranda dihilangkan) -->
+        <nav class="flex items-center bg-black/10 p-1 rounded-xl border border-white/20 w-full sm:w-auto justify-center flex-wrap sm:flex-nowrap gap-1">
+            <button id="navPelaporan" onclick="showPage('pelaporan')" class="nav-btn active px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center gap-1.5 flex-1 sm:flex-none justify-center">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span>Pelaporan Kombel</span>
+            </button>
+            <button id="navRekapan" onclick="showPage('rekapan')" class="nav-btn text-white/80 hover:text-white px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center gap-1.5 flex-1 sm:flex-none justify-center">
+                <i class="fa-solid fa-table-list"></i>
+                <span>Rekapan Data</span>
+            </button>
+            <button id="navStatistik" onclick="showPage('statistik')" class="nav-btn text-white/80 hover:text-white px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center gap-1.5 flex-1 sm:flex-none justify-center">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Statistik Laporan</span>
+            </button>
+        </nav>
+    </header>
+
+    <div class="max-w-5xl mx-auto">
+
+        <!-- ================================================================= -->
+        <!-- HALAMAN 1: PELAPORAN KOMBEL (FORMULIR PELAPORAN DATA)             -->
+        <!-- ================================================================= -->
+        <div id="pagePelaporan" class="space-y-6">
+            <!-- Top Header Banner / Kop -->
+            <header class="gradient-header rounded-2xl shadow-xl text-white p-6 sm:p-8 relative overflow-hidden border border-slate-700">
+                <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-graduation-cap text-9xl"></i>
+                </div>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
+                    <div>
+                        <span class="bg-blue-500/20 text-blue-300 text-xs font-semibold px-3 py-1 rounded-full border border-blue-400/30 uppercase tracking-wider mb-2 inline-block">
+                            Formulir Resmi Pelaporan
+                        </span>
+                        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                            Laporan Kegiatan Kombel Tahun 2026
+                        </h1>
+                        <p class="text-slate-300 text-sm mt-1">
+                            Komunitas Belajar (Kombel) - Peningkatan Mutu & Transformasi Pembelajaran
+                        </p>
+                    </div>
+                </div>
+            </header>
+
+            <form id="kombelForm" onsubmit="handleSubmit(event)" class="space-y-6">
+                <!-- BAGIAN 1: IDENTITAS KOMBEL DAN RESPONDEN -->
+                <section class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/80 transition-all hover:shadow-md">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg font-bold">
+                            1
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900 form-section-title">Identitas Kombel & Responden</h2>
+                            <p class="text-xs text-slate-500 mt-1">Informasi umum lokasi dan penanggung jawab data</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <!-- Kecamatan -->
+                        <div>
+                            <label for="kecamatan" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                1. Kecamatan <span class="text-red-500">*</span>
+                            </label>
+                            <select id="kecamatan" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-3 transition">
+                                <option value="" disabled selected>-- Pilih Kecamatan --</option>
+                                <option value="Galela">Galela</option>
+                                <option value="Galela Barat">Galela Barat</option>
+                                <option value="Galela Selatan">Galela Selatan</option>
+                                <option value="Galela Utara">Galela Utara</option>
+                                <option value="Kao">Kao</option>
+                                <option value="Kao Barat">Kao Barat</option>
+                                <option value="Kao Teluk">Kao Teluk</option>
+                                <option value="Kao Utara">Kao Utara</option>
+                                <option value="Loloda Kepulauan">Loloda Kepulauan</option>
+                                <option value="Loloda Utara">Loloda Utara</option>
+                                <option value="Malifut">Malifut</option>
+                                <option value="Tobelo">Tobelo</option>
+                                <option value="Tobelo Barat">Tobelo Barat</option>
+                                <option value="Tobelo Selatan">Tobelo Selatan</option>
+                                <option value="Tobelo Tengah">Tobelo Tengah</option>
+                                <option value="Tobelo Timur">Tobelo Timur</option>
+                                <option value="Tobelo Utara">Tobelo Utara</option>
+                            </select>
+                        </div>
+
+                        <!-- Jenis Kombel -->
+                        <div>
+                            <label for="jenisKombel" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                2. Jenis Kombel <span class="text-red-500">*</span>
+                            </label>
+                            <select id="jenisKombel" onchange="updateKombelOptions()" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-3 transition">
+                                <option value="" disabled selected>-- Pilih Jenis Kombel --</option>
+                                <option value="Sekolah TK/PAUD">Sekolah TK/PAUD</option>
+                                <option value="Sekolah SD">Sekolah SD</option>
+                                <option value="Sekolah SMP">Sekolah SMP</option>
+                                <option value="Gugus TK/PAUD">Gugus TK/PAUD</option>
+                                <option value="Gugus SD">Gugus SD</option>
+                                <option value="Klaster SMP">Klaster SMP</option>
+                                <option value="Antar Sekolah SD">Antar Sekolah SD</option>
+                                <option value="Antar Sekolah SMP">Antar Sekolah SMP</option>
+                            </select>
+                        </div>
+
+                        <!-- Nama Kombel (Searchable Dropdown) -->
+                        <div class="relative">
+                            <label for="namaKombel" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                3. Nama Kombel <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="text" id="namaKombel" required autocomplete="off" 
+                                    placeholder="Ketik kata kunci nama kombel/sekolah..." 
+                                    oninput="filterKombelOptions()" 
+                                    onfocus="showKombelDropdown()" 
+                                    class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-3 pr-10 transition">
+                                <div class="absolute right-3 top-3.5 text-slate-400 pointer-events-none">
+                                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Search Suggestions Dropdown Box -->
+                            <div id="kombelDropdown" class="hidden absolute z-30 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar">
+                                <!-- Populated dynamically via JavaScript -->
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-circle-info mr-1"></i>Ketik nama Kombel atau pilih dari daftar pencarian</p>
+                        </div>
+
+                        <!-- Nama Responden -->
+                        <div>
+                            <label for="namaResponden" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                4. Nama Responden <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="namaResponden" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-3 transition">
+                        </div>
+
+                        <!-- Jabatan Responden -->
+                        <div class="md:col-span-2">
+                            <label for="jabatan" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                5. Jabatan Responden dalam Kombel <span class="text-red-500">*</span>
+                            </label>
+                            <select id="jabatan" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-3 transition">
+                                <option value="" disabled selected>-- Pilih Jabatan --</option>
+                                <option value="Ketua">Ketua</option>
+                                <option value="Wakil Ketua">Wakil Ketua</option>
+                                <option value="Sekertaris">Sekertaris</option>
+                                <option value="Bendahara">Bendahara</option>
+                                <option value="Bidang Pendidikan">Bidang Pendidikan</option>
+                                <option value="Bidang Perencanaan dan Pelaksanaan Program">Bidang Perencanaan dan Pelaksanaan Program</option>
+                                <option value="Bidang Humas">Bidang Humas</option>
+                                <option value="Bidang Dokumentasi/Pulikasi">Bidang Dokumentasi/Pulikasi</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- BAGIAN 2: DETAIL KEGIATAN -->
+                <section class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/80 transition-all hover:shadow-md">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold">
+                            2
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900 form-section-title">Detail & Waktu Pelaksanaan</h2>
+                            <p class="text-xs text-slate-500 mt-1">Informasi lengkap mengenai substansi dan jadwal acara</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+                            <!-- Tanggal Kegiatan -->
+                            <div>
+                                <label for="tanggalKegiatan" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                    6. Tanggal Kegiatan <span class="text-red-500">*</span>
+                                </label>
+                                <input type="date" id="tanggalKegiatan" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-3 transition">
+                            </div>
+
+                            <!-- Jam Mulai -->
+                            <div>
+                                <label for="jamMulai" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                    7a. Jam Mulai <span class="text-red-500">*</span>
+                                </label>
+                                <input type="time" id="jamMulai" oninput="calculateDuration()" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-3 transition">
+                            </div>
+
+                            <!-- Jam Selesai -->
+                            <div>
+                                <label for="jamSelesai" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                    7b. Jam Selesai <span class="text-red-500">*</span>
+                                </label>
+                                <input type="time" id="jamSelesai" oninput="calculateDuration()" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-3 transition">
+                            </div>
+
+                            <!-- Durasi (Otomatis) -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                    7c. Durasi Kegiatan
+                                </label>
+                                <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl p-3 h-[46px] overflow-hidden">
+                                    <i class="fa-solid fa-stopwatch text-emerald-600"></i>
+                                    <span id="durasiText" class="font-bold text-slate-800 text-sm whitespace-nowrap">0 J 0 M</span>
+                                    <span class="text-[10px] text-emerald-600 ml-auto font-medium bg-emerald-100 px-1.5 py-0.5 rounded-md hidden lg:inline-block">Auto</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Topik Kegiatan -->
+                        <div class="md:col-span-3">
+                            <label for="topik" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                8. Topik Kegiatan <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="topik" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-3 transition">
+                        </div>
+
+                        <!-- Tujuan Kegiatan -->
+                        <div class="md:col-span-3">
+                            <label for="tujuan" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                9. Tujuan Kegiatan <span class="text-red-500">*</span>
+                            </label>
+                            <textarea id="tujuan" rows="3" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-3 transition"></textarea>
+                        </div>
+
+                        <!-- Target Peserta -->
+                        <div class="md:col-span-3">
+                            <label for="targetPeserta" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                10. Target Peserta <span class="text-red-500">*</span>
+                            </label>
+                            <select id="targetPeserta" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-3 transition">
+                                <option value="" disabled selected>-- Pilih Target Peserta --</option>
+                                <option value="Kepala Sekolah">Kepala Sekolah</option>
+                                <option value="Guru">Guru</option>
+                                <option value="Guru dan Kepala Sekolah">Guru dan Kepala Sekolah</option>
+                                <option value="Guru, Kepala Sekolah, TU dan/atau Perangkat Sekolah Lainnya">Guru, Kepala Sekolah, TU dan/atau Perangkat Sekolah Lainnya</option>
+                            </select>
+                        </div>
+
+                        <!-- Aktivitas Utama -->
+                        <div class="md:col-span-2">
+                            <label for="aktivitasUtama" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                11. Aktivitas Utama <span class="text-red-500">*</span>
+                            </label>
+                            <select id="aktivitasUtama" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-3 transition">
+                                <option value="" disabled selected>-- Pilih Aktivitas Utama --</option>
+                                <option value="Pemilihan Pengurus">Pemilihan Pengurus</option>
+                                <option value="Penyusunan Program Kombel">Penyusunan Program Kombel</option>
+                                <option value="Seminar">Seminar</option>
+                                <option value="Bimtek/Workshop">Bimtek/Workshop</option>
+                                <option value="Berbagi Praktik Baik">Berbagi Praktik Baik</option>
+                                <option value="Siklus 1: Refleksi Awal">Siklus 1: Refleksi Awal</option>
+                                <option value="Siklus 2: Perencanaan">Siklus 2: Perencanaan</option>
+                                <option value="Siklus 3: Implementasi">Siklus 3: Implementasi</option>
+                                <option value="Siklus 4: Evaluasi">Siklus 4: Evaluasi</option>
+                            </select>
+                        </div>
+
+                        <!-- Sumber Dana -->
+                        <div>
+                            <label for="sumberDana" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                12. Sumber Dana <span class="text-red-500">*</span>
+                            </label>
+                            <select id="sumberDana" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-3 transition">
+                                <option value="" disabled selected>-- Pilih Sumber Dana --</option>
+                                <option value="Dana BOSP">Dana BOSP</option>
+                                <option value="Dana Lainnya">Dana Lainnya</option>
+                                <option value="Dana BOSP dan Dana Lainnya">Dana BOSP dan Dana Lainnya</option>
+                                <option value="Tidak Berbiaya">Tidak Berbiaya</option>
+                            </select>
+                        </div>
+
+                        <!-- Nama Fasilitator -->
+                        <div>
+                            <label for="namaFasilitator" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                13. Nama Fasilitator / Narasumber <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="namaFasilitator" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-3 transition">
+                        </div>
+
+                        <!-- Instansi Fasilitator -->
+                        <div class="md:col-span-2">
+                            <label for="instansiFasilitator" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                14. Instansi Fasilitator / Narasumber <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="instansiFasilitator" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-3 transition">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- BAGIAN 3: KEHADIRAN DAN PELAPORAN -->
+                <section class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/80 transition-all hover:shadow-md">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg font-bold">
+                            3
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900 form-section-title">Kehadiran & Berkas Pendukung</h2>
+                            <p class="text-xs text-slate-500 mt-1">Data statistik peserta dan bukti fisik kegiatan</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <!-- Target Kehadiran -->
+                        <div>
+                            <label for="targetKehadiran" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                15. Target Kehadiran <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="number" min="1" id="targetKehadiran" oninput="calculatePercentage()" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 p-3 pr-16 transition">
+                                <span class="absolute right-3 top-3 text-xs text-slate-400 font-medium">Orang</span>
+                            </div>
+                        </div>
+
+                        <!-- Realisasi Kehadiran -->
+                        <div>
+                            <label for="realisasiKehadiran" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                16. Realisasi Kehadiran <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="number" min="0" id="realisasiKehadiran" oninput="calculatePercentage()" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 p-3 pr-16 transition">
+                                <span class="absolute right-3 top-3 text-xs text-slate-400 font-medium">Orang</span>
+                            </div>
+                        </div>
+
+                        <!-- Persentase Kehadiran (Otomatis) -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                17. Persentase Kehadiran
+                            </label>
+                            <div class="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-xl p-3">
+                                <i class="fa-solid fa-calculator text-purple-600"></i>
+                                <span id="persentaseText" class="font-bold text-slate-800 text-base">0%</span>
+                                <span class="text-[11px] text-purple-600 ml-auto font-medium bg-purple-100 px-2 py-0.5 rounded-md">Otomatis</span>
+                            </div>
+                        </div>
+
+                        <!-- Link Facebook -->
+                        <div class="md:col-span-3">
+                            <label for="linkFacebook" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                18. Link Postingan Kegiatan di Facebook <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-blue-600">
+                                    <i class="fa-brands fa-facebook"></i>
+                                </div>
+                                <input type="url" id="linkFacebook" required placeholder="https://facebook.com/..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 pl-10 p-3 transition">
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-lock-open mr-1"></i>Pastikan postingan bersifat "Publik" agar dapat dibuka oleh verifikator.</p>
+                        </div>
+
+                        <!-- Catatan Kegiatan -->
+                        <div class="md:col-span-3">
+                            <label for="catatanKegiatan" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                19. Catatan Kegiatan <span class="text-slate-400 font-normal">(Hambatan, solusi, atau poin penting)</span>
+                            </label>
+                            <textarea id="catatanKegiatan" rows="3" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 p-3 transition"></textarea>
+                        </div>
+
+                        <!-- Link Tautan Daftar Hadir -->
+                        <div class="md:col-span-3">
+                            <label for="linkDaftarHadir" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                20. Link Daftar Hadir (Google Drive / Cloud Lainnya) <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-600">
+                                    <i class="fa-solid fa-link"></i>
+                                </div>
+                                <input type="url" id="linkDaftarHadir" oninput="checkDriveLink()" required placeholder="https://drive.google.com/..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 pl-10 p-3 transition">
+                            </div>
+                            
+                            <!-- Akses Warning Google Drive -->
+                            <div id="aksesWarning" class="hidden mt-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                                <div class="flex gap-3">
+                                    <div class="text-amber-500 text-xl">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-amber-800 mb-1">Pemberitahuan Akses File!</p>
+                                        <p class="text-[11px] text-amber-700 leading-relaxed">
+                                            Sistem mendeteksi Anda menggunakan link Google Drive. Seringkali link yang dibagikan masih berstatus <strong>Dibatasi (Restricted)</strong> sehingga verifikator tidak bisa membukanya.
+                                        </p>
+                                        
+                                        <div class="mt-2 bg-white p-2.5 rounded-lg border border-amber-100">
+                                            <p class="text-[11px] font-bold text-slate-700 mb-1">Panduan Singkat Solusinya:</p>
+                                            <ol class="list-decimal ml-4 text-[10px] text-slate-600 space-y-1">
+                                                <li>Buka file daftar hadir Anda di Google Drive.</li>
+                                                <li>Klik tombol <strong>Bagikan (Share)</strong>.</li>
+                                                <li>Pada bagian <em>Akses Umum</em>, ubah dari "Dibatasi" menjadi <strong>"Siapa saja yang memiliki tautan" (Anyone with the link)</strong>.</li>
+                                                <li>Salin ulang link tersebut dan pastikan ditempel pada kolom di atas.</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3 flex items-start gap-2 pt-3 border-t border-amber-200/60">
+                                    <input type="checkbox" id="konfirmasiAkses" class="mt-0.5 w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                                    <label for="konfirmasiAkses" class="text-[11px] font-semibold text-slate-700 cursor-pointer">
+                                        Saya menyatakan bahwa saya telah mengubah akses link daftar hadir menjadi <span class="text-blue-600">"Siapa saja yang memiliki tautan"</span>. (Wajib dicentang) <span class="text-red-500">*</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-1">Perhatian!.</p>
+                            <p class="text-[11px] text-slate-400 mt-1">1. Pastikan file daftar hadir dalam bentuk PDF dan sudah disimpan dalam google drive Anda.</p>
+                            <p class="text-[11px] text-slate-400 mt-1">2. <i class="fa-solid fa-lock-open mr-1"></i>Pastikan hak akses link diatur ke "Siapa saja yang memiliki tautan" (Public) agar dapat dibuka oleh verifikator.</p>
+                        </div>
+                        
+                    </div>
+                </section>
+
+                <!-- Submit Action Section -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900 text-white p-5 rounded-2xl shadow-lg">
+                    <div class="flex items-center gap-3 text-xs text-slate-300">
+                        <i class="fa-solid fa-shield-halved text-emerald-400 text-lg"></i>
+                        <span>Data akan dikirim secara otomatis ke Google Sheet & tersimpan secara aman.</span>
+                    </div>
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <button type="submit" id="btnSubmitForm" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-8 py-3.5 rounded-xl transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            Kirim Laporan
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+
+            <!-- Footer Pelaporan -->
+            <footer class="text-center py-4 text-xs text-slate-400 border-t border-slate-200">
+                <p>PENA HALUT &copy; 2026 - Pelaporan Kegiatan Komunitas Belajar (Kombel)</p>
+            </footer>
+
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- HALAMAN 2: REKAPAN HASIL PENGIRIMAN DATA                          -->
+        <!-- ================================================================= -->
+        <div id="pageRekapan" class="space-y-6 hidden">
+
+            <!-- Top Header Banner Rekapan -->
+            <header class="gradient-header rounded-2xl shadow-xl text-white p-6 sm:p-8 relative overflow-hidden border border-slate-700">
+                <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-chart-line text-9xl"></i>
+                </div>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
+                    <div>
+                        <span class="bg-blue-500/20 text-blue-300 text-xs font-semibold px-3 py-1 rounded-full border border-blue-400/30 uppercase tracking-wider mb-2 inline-block">
+                            Dashboard Pengawasan
+                        </span>
+                        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                            Rekapan Hasil Pengiriman Data Kombel
+                        </h1>
+                        <p class="text-slate-300 text-sm mt-1">
+                            Monitoring, filter pencarian, dan unduh data pelaporan kegiatan Komunitas Belajar
+                        </p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Stat Cards Summary Rekapan -->
+            <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold shrink-0">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                    <div>
+                        <div id="statTotalPengirim" class="text-2xl font-black text-slate-900">0</div>
+                        <div class="text-xs text-slate-500 font-medium">Total Pengirim Data</div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold shrink-0">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+                    <div>
+                        <div id="statKecamatanAktif" class="text-2xl font-black text-slate-900">0</div>
+                        <div class="text-xs text-slate-500 font-medium">Kecamatan Melapor</div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl font-bold shrink-0">
+                        <i class="fa-solid fa-school"></i>
+                    </div>
+                    <div>
+                        <div id="statKombelAktif" class="text-2xl font-black text-slate-900">0</div>
+                        <div class="text-xs text-slate-500 font-medium">Kombel Terdata</div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold shrink-0">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <div id="statTotalPeserta" class="text-2xl font-black text-slate-900">0</div>
+                        <div class="text-xs text-slate-500 font-medium">Total Peserta Hadir</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filter Section and Actions -->
+            <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-filter text-blue-600"></i> Filter & Penyaringan Data
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Saring rekapan berdasarkan parameter yang Anda inginkan</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                        <!-- Indikator Auto-Sync Google Sheet -->
+                        <div class="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-2 rounded-xl border border-emerald-200 text-xs font-semibold">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                            <span id="syncStatusText">Auto-Sync Google Sheet Aktif</span>
+                        </div>
+
+                        <!-- Button Download Data -->
+                        <button onclick="downloadExcelData()" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-file-excel text-sm"></i>
+                            <span>Download (Excel)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Filter Controls -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Filter Kecamatan -->
+                    <div>
+                        <label for="filterKecamatan" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                            Filter Kecamatan
+                        </label>
+                        <select id="filterKecamatan" onchange="renderRekapanData()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5 transition">
+                            <option value="">-- Semua Kecamatan --</option>
+                            <option value="Galela">Galela</option>
+                            <option value="Galela Barat">Galela Barat</option>
+                            <option value="Galela Selatan">Galela Selatan</option>
+                            <option value="Galela Utara">Galela Utara</option>
+                            <option value="Kao">Kao</option>
+                            <option value="Kao Barat">Kao Barat</option>
+                            <option value="Kao Teluk">Kao Teluk</option>
+                            <option value="Kao Utara">Kao Utara</option>
+                            <option value="Loloda Kepulauan">Loloda Kepulauan</option>
+                            <option value="Loloda Utara">Loloda Utara</option>
+                            <option value="Malifut">Malifut</option>
+                            <option value="Tobelo">Tobelo</option>
+                            <option value="Tobelo Barat">Tobelo Barat</option>
+                            <option value="Tobelo Selatan">Tobelo Selatan</option>
+                            <option value="Tobelo Tengah">Tobelo Tengah</option>
+                            <option value="Tobelo Timur">Tobelo Timur</option>
+                            <option value="Tobelo Utara">Tobelo Utara</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Jenis Kombel -->
+                    <div>
+                        <label for="filterJenisKombel" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                            Filter Jenis Kombel
+                        </label>
+                        <select id="filterJenisKombel" onchange="renderRekapanData()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5 transition">
+                            <option value="">-- Semua Jenis Kombel --</option>
+                            <option value="Sekolah TK/PAUD">Sekolah TK/PAUD</option>
+                            <option value="Sekolah SD">Sekolah SD</option>
+                            <option value="Sekolah SMP">Sekolah SMP</option>
+                            <option value="Gugus TK/PAUD">Gugus TK/PAUD</option>
+                            <option value="Gugus SD">Gugus SD</option>
+                            <option value="Klaster SMP">Klaster SMP</option>
+                            <option value="Antar Sekolah SD">Antar Sekolah SD</option>
+                            <option value="Antar Sekolah SMP">Antar Sekolah SMP</option>
+                        </select>
+                    </div>
+
+                    <!-- Search Nama Kombel -->
+                    <div>
+                        <label for="filterNamaKombel" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                            Cari Nama Kombel
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="filterNamaKombel" oninput="renderRekapanData()" placeholder="Ketik kata kunci nama kombel..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5 pr-8 transition">
+                            <i class="fa-solid fa-magnifying-glass absolute right-3 top-3 text-xs text-slate-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-slate-500 pt-2">
+                    <span id="filteredCountInfo">Menampilkan 0 dari 0 data</span>
+                    <button onclick="resetRekapanFilters()" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Filter
+                    </button>
+                </div>
+            </section>
+
+            <!-- Data Table Section -->
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+                <div class="overflow-x-auto">
+                   <table id="tabelRekapanData" class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 text-white text-[11px] uppercase tracking-wider font-semibold">
+                                <th class="py-3.5 px-4 text-center">No</th>
+                                <th class="py-3.5 px-4">Kecamatan</th>
+                                <th class="py-3.5 px-4">Nama Kombel</th>
+                                <th class="py-3.5 px-4">Jenis Kombel</th>
+                                <th class="py-3.5 px-4">Tanggal & Waktu</th>
+                                <th class="py-3.5 px-4 text-center">Kehadiran</th>
+                                <th class="py-3.5 px-4 text-center">Aksi / Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rekapanTableBody" class="divide-y divide-slate-100 text-xs text-slate-700">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State Message -->
+                <div id="emptyRekapanState" class="hidden p-8 text-center space-y-3">
+                    <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-xl">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <p class="text-xs font-semibold text-slate-600">Tidak ada data pelaporan yang cocok dengan filter yang dipilih.</p>
+                    <button onclick="resetRekapanFilters()" class="text-xs text-blue-600 underline font-medium">Reset pilihan filter</button>
+                </div>
+            </section>
+
+            <!-- Footer Rekapan -->
+            <footer class="text-center py-4 text-xs text-slate-400 border-t border-slate-200">
+                <p>PENA HALUT &copy; 2026 - Rekapan Data Pengawasan Pendidikan Halmahera Utara</p>
+            </footer>
+
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- HALAMAN 3: STATISTIK / AGREGAT LAPORAN MASUK                      -->
+        <!-- ================================================================= -->
+        <div id="pageStatistik" class="space-y-6 hidden">
+
+            <!-- Top Header Banner Statistik -->
+            <header class="gradient-header rounded-2xl shadow-xl text-white p-6 sm:p-8 relative overflow-hidden border border-slate-700">
+                <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-chart-pie text-9xl"></i>
+                </div>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
+                    <div>
+                        <span class="bg-amber-500/20 text-amber-300 text-xs font-semibold px-3 py-1 rounded-full border border-amber-400/30 uppercase tracking-wider mb-2 inline-block">
+                            Agregat Data
+                        </span>
+                        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                            Statistik Jumlah Laporan Kombel
+                        </h1>
+                        <p class="text-slate-300 text-sm mt-1">
+                            Perhitungan total laporan yang masuk dikelompokkan berdasarkan parameter tertentu
+                        </p>
+                    </div>
+
+                    <!-- Fitur Download Statistik -->
+                    <button onclick="downloadStatistikExcelData()" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 shrink-0">
+                        <i class="fa-solid fa-file-excel text-sm"></i>
+                        <span>Download Statistik (Excel)</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Filter Section and Actions -->
+            <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-filter text-amber-600"></i> Saring Data Statistik
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Saring hasil agregat data berdasarkan pilihan dibawah ini</p>
+                    </div>
+                </div>
+
+                <!-- Input Filter Controls -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Filter Kecamatan -->
+                    <div>
+                        <label for="statFilterKecamatan" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                            Kecamatan
+                        </label>
+                        <select id="statFilterKecamatan" onchange="renderStatistikData()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 p-2.5 transition">
+                            <option value="">-- Semua Kecamatan --</option>
+                            <option value="Galela">Galela</option>
+                            <option value="Galela Barat">Galela Barat</option>
+                            <option value="Galela Selatan">Galela Selatan</option>
+                            <option value="Galela Utara">Galela Utara</option>
+                            <option value="Kao">Kao</option>
+                            <option value="Kao Barat">Kao Barat</option>
+                            <option value="Kao Teluk">Kao Teluk</option>
+                            <option value="Kao Utara">Kao Utara</option>
+                            <option value="Loloda Kepulauan">Loloda Kepulauan</option>
+                            <option value="Loloda Utara">Loloda Utara</option>
+                            <option value="Malifut">Malifut</option>
+                            <option value="Tobelo">Tobelo</option>
+                            <option value="Tobelo Barat">Tobelo Barat</option>
+                            <option value="Tobelo Selatan">Tobelo Selatan</option>
+                            <option value="Tobelo Tengah">Tobelo Tengah</option>
+                            <option value="Tobelo Timur">Tobelo Timur</option>
+                            <option value="Tobelo Utara">Tobelo Utara</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Jenis Kombel -->
+                    <div>
+                        <label for="statFilterJenisKombel" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                            Jenis Kombel
+                        </label>
+                        <select id="statFilterJenisKombel" onchange="renderStatistikData()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 p-2.5 transition">
+                            <option value="">-- Semua Jenis Kombel --</option>
+                            <option value="Sekolah TK/PAUD">Sekolah TK/PAUD</option>
+                            <option value="Sekolah SD">Sekolah SD</option>
+                            <option value="Sekolah SMP">Sekolah SMP</option>
+                            <option value="Gugus TK/PAUD">Gugus TK/PAUD</option>
+                            <option value="Gugus SD">Gugus SD</option>
+                            <option value="Klaster SMP">Klaster SMP</option>
+                            <option value="Antar Sekolah SD">Antar Sekolah SD</option>
+                            <option value="Antar Sekolah SMP">Antar Sekolah SMP</option>
+                        </select>
+                    </div>
+
+                    <!-- Search Nama Kombel -->
+                    <div>
+                        <label for="statFilterNamaKombel" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                            Cari Nama Kombel
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="statFilterNamaKombel" oninput="renderStatistikData()" placeholder="Ketik kata kunci nama kombel..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 p-2.5 pr-8 transition">
+                            <i class="fa-solid fa-magnifying-glass absolute right-3 top-3 text-xs text-slate-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-slate-500 pt-2">
+                    <span id="statTotalGrupInfo">Menampilkan 0 entri kombel</span>
+                    <button onclick="resetStatistikFilters()" class="text-amber-600 hover:text-amber-800 font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Filter
+                    </button>
+                </div>
+            </section>
+
+            <!-- Data Table Section -->
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table id="tabelStatistikData" class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 text-white text-[11px] uppercase tracking-wider font-semibold">
+                                <th class="py-3.5 px-4 text-center w-16">No</th>
+                                <th class="py-3.5 px-4">Kecamatan</th>
+                                <th class="py-3.5 px-4">Jenis Kombel</th>
+                                <th class="py-3.5 px-4">Nama Kombel</th>
+                                <th class="py-3.5 px-4 text-center">Jumlah Laporan Masuk</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statistikTableBody" class="divide-y divide-slate-100 text-xs text-slate-700">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State Message -->
+                <div id="emptyStatistikState" class="hidden p-8 text-center space-y-3">
+                    <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-xl">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <p class="text-xs font-semibold text-slate-600">Tidak ada data statistik yang sesuai dengan filter yang dipilih.</p>
+                </div>
+            </section>
+
+            <!-- Footer Statistik -->
+            <footer class="text-center py-4 text-xs text-slate-400 border-t border-slate-200">
+                <p>PENA HALUT &copy; 2026 - Statistik Laporan Pengawasan Pendidikan Halmahera Utara</p>
+            </footer>
+
+        </div>
+
+    </div>
+
+    <!-- Modal Preview / Sukses Kirim Form -->
+    <div id="successModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 text-center animate-in fade-in zoom-in duration-200">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-1">Laporan Berhasil Terkirim!</h3>
+            <p class="text-xs text-slate-500 mb-5">Terima kasih, data kegiatan Kombel Anda telah tersimpan ke sistem PENA HALUT & Google Sheet.</p>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-left text-xs space-y-2 mb-6">
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Kecamatan:</span>
+                    <span id="resKecamatan" class="font-semibold text-slate-800"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Nama Kombel:</span>
+                    <span id="resKombel" class="font-semibold text-slate-800"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Responden:</span>
+                    <span id="resResponden" class="font-semibold text-slate-800"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Waktu & Durasi:</span>
+                    <span id="resWaktu" class="font-semibold text-slate-800"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Topik:</span>
+                    <span id="resTopik" class="font-semibold text-slate-800 truncate max-w-[200px]"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Kehadiran:</span>
+                    <span id="resKehadiran" class="font-semibold text-slate-800"></span>
+                </div>
+            </div>
+
+            <button type="button" onclick="closeModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl transition text-xs">
+                Tutup & Kembali
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Lihat Detail Hasil Isian Responden -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 my-8 space-y-5 animate-in fade-in zoom-in duration-200">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-file-lines"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">Detail Hasil Isian Responden</h3>
+                        <p class="text-xs text-slate-500">Rincian data laporan kegiatan dan unggahan berkas</p>
+                    </div>
+                </div>
+                <button onclick="closeDetailModal()" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content Body -->
+            <div class="space-y-4 text-xs">
+                <!-- Responden & Kombel Badge -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div>
+                        <span class="text-slate-400 font-semibold uppercase text-[10px] tracking-wider block">Responden & Jabatan</span>
+                        <p id="detRespondenJabatan" class="font-bold text-slate-900 text-sm mt-0.5">-</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-semibold uppercase text-[10px] tracking-wider block">Kombel / Sekolah</span>
+                        <p id="detKombelKecamatan" class="font-bold text-blue-600 text-sm mt-0.5">-</p>
+                    </div>
+                </div>
+
+                <!-- Detail Isian Waktu & Topik -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                    <div>
+                        <span class="text-slate-400 font-medium block">Tanggal & Waktu</span>
+                        <p id="detWaktuDurasi" class="font-semibold text-slate-800 mt-0.5">-</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-medium block">Jenis Kombel</span>
+                        <p id="detJenisKombel" class="font-semibold text-slate-800 mt-0.5">-</p>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <span class="text-slate-400 font-medium block">Topik Kegiatan</span>
+                        <p id="detTopik" class="font-semibold text-slate-900 text-sm mt-0.5 bg-blue-50/50 p-2.5 rounded-lg border border-blue-100">-</p>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <span class="text-slate-400 font-medium block">Tujuan Kegiatan</span>
+                        <p id="detTujuan" class="text-slate-700 mt-0.5 leading-relaxed">-</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-medium block">Target Peserta</span>
+                        <p id="detTargetPeserta" class="font-semibold text-slate-800 mt-0.5">-</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-medium block">Aktivitas Utama</span>
+                        <p id="detAktivitasUtama" class="font-semibold text-slate-800 mt-0.5">-</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-medium block">Sumber Dana</span>
+                        <p id="detSumberDana" class="font-semibold text-slate-800 mt-0.5">-</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-medium block">Fasilitator & Instansi</span>
+                        <p id="detFasilitator" class="font-semibold text-slate-800 mt-0.5">-</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-medium block">Statistik Kehadiran</span>
+                        <p id="detKehadiran" class="font-semibold text-emerald-600 mt-0.5">-</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-medium block">Link Facebook</span>
+                        <a id="detLinkFb" href="#" target="_blank" class="text-blue-600 hover:underline font-semibold mt-0.5 flex items-center gap-1 truncate">
+                            <i class="fa-brands fa-facebook text-sm"></i> Buka Tautan Postingan
+                        </a>
+                    </div>
+                    
+                    <!-- DOKUMEN DAFTAR HADIR -->
+                    <div class="sm:col-span-2 bg-purple-50/60 p-3.5 rounded-xl border border-purple-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-1">
+                        <div>
+                            <span class="text-purple-900 font-bold text-xs flex items-center gap-1.5">
+                                <i class="fa-solid fa-clipboard-user text-purple-600 text-sm"></i>
+                                Dokumen Daftar Hadir Responden
+                            </span>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Tautan dokumen daftar hadir resmi dalam Google Drive / Cloud storage.</p>
+                        </div>
+                        <a id="detLinkDaftarHadir" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-purple-500/20 transition-all transform active:scale-95 shrink-0">
+                            <i class="fa-solid fa-file-pdf text-sm"></i>
+                            <span>Lihat Daftar Hadir</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-0.5"></i>
+                        </a>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <span class="text-slate-400 font-medium block">Catatan Kegiatan</span>
+                        <p id="detCatatan" class="text-slate-600 italic mt-0.5">-</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-3 border-t border-slate-100 flex justify-end">
+                <button type="button" onclick="closeDetailModal()" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 px-6 rounded-xl transition text-xs">
+                    Tutup Detail
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- SCRIPT UTAMA -->
+    <script>
+        // Endpoint Web App Google Apps Script Default
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzSG9o1Kw6r1Roi7d3CED3zu-y51qOEP5wHKJD9qYoHEL3gR72bVTkDR4FaPuiM0wIx/exec";
+
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            const bgClass = type === 'error' ? 'bg-red-600 text-white' : type === 'success' ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-white';
+            const icon = type === 'error' ? 'fa-circle-xmark' : type === 'success' ? 'fa-circle-check' : 'fa-circle-info';
+
+            toast.className = `${bgClass} p-4 rounded-xl shadow-2xl border border-white/10 flex items-center gap-3 text-xs font-medium transform transition-all duration-300 translate-y-4 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} text-base"></i>
+                <span class="flex-1">${message}</span>
+                <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            `;
+
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Page Navigation Switcher Logic (Diperbarui dengan support warna text-white/80)
+        function showPage(pageName) {
+            const pelaporan = document.getElementById('pagePelaporan');
+            const rekapan = document.getElementById('pageRekapan');
+            const statistik = document.getElementById('pageStatistik');
+
+            const btnPelaporan = document.getElementById('navPelaporan');
+            const btnRekapan = document.getElementById('navRekapan');
+            const btnStatistik = document.getElementById('navStatistik');
+
+            [btnPelaporan, btnRekapan, btnStatistik].forEach(btn => {
+                btn?.classList.remove('active');
+                btn?.classList.add('text-white/80');
+            });
+
+            pelaporan?.classList.add('hidden');
+            rekapan?.classList.add('hidden');
+            statistik?.classList.add('hidden');
+
+            if (pageName === 'pelaporan') {
+                pelaporan?.classList.remove('hidden');
+                btnPelaporan?.classList.add('active');
+                btnPelaporan?.classList.remove('text-white/80');
+            } else if (pageName === 'rekapan') {
+                rekapan?.classList.remove('hidden');
+                btnRekapan?.classList.add('active');
+                btnRekapan?.classList.remove('text-white/80');
+                renderRekapanData();
+                autoFetchFromGoogleSheet();
+            } else if (pageName === 'statistik') {
+                statistik?.classList.remove('hidden');
+                btnStatistik?.classList.add('active');
+                btnStatistik?.classList.remove('text-white/80');
+                renderStatistikData();
+                autoFetchFromGoogleSheet();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // State Array for storing Submitted Reports
+        let submittedReports = [];
+
+        // Inisialisasi Local Storage
+        const savedData = localStorage.getItem('penaHalutData');
+        if(savedData) {
+            try {
+                submittedReports = JSON.parse(savedData);
+            } catch(e) {
+                submittedReports = [];
+            }
+        }
+
+        // Data Sekolah/Kombel Master
+        const masterKombel = [
+            "SD NEGERI 1 TOBELO", "SD NEGERI 2 TOBELO", "SD NEGERI 3 TOBELO", "SD INPRES TOBELO",
+            "SMP NEGERI 1 TOBELO", "SMP NEGERI 2 TOBELO", "SMP KRISTEN TOBELO",
+            "SD NEGERI 1 GALELA", "SD NEGERI 2 GALELA", "SMP NEGERI 1 GALELA",
+            "SD NEGERI 1 KAO", "SMP NEGERI 1 KAO",
+            "GUGUS MAWAR TK TOBELO", "GUGUS MELATI TK GALELA",
+            "GUGUS 01 SD TOBELO", "GUGUS 02 SD TOBELO", "GUGUS 10 SD GALELA",
+            "KLASTER 1 SMP TOBELO", "KLASTER 2 SMP GALELA",
+            "KOMBEL ANTAR SEKOLAH SD KAO", "KOMBEL LITERASI SMP HALUT"
+        ];
+
+        // Data Kombel yang dikelompokkan berdasarkan Jenis Kombel
+        const dataKombel = {
+            "Sekolah TK/PAUD": [
+                "KB AISYIAH", "KB AN-NISAA", "KB BUDI BAKTI", "KB HARAPAN BARU TUGUIS", "KB INJILI", "KB MAHAILOA", "KB MAULIDA FITRIA", "KB NURUL ILMI", "KB PAUD ABADI GAMSUNGI", "KB PAUD AKEPANAWA", "KB PAUD AL FAJRI", "KB PAUD AL NAZWA", "KB PAUD AL-ISTIQAMAH", "KB PAUD ALKHAIRAAT TOBELO", "KB PAUD ANGGREK BULAN TP.PKK", "KB PAUD AWI DODARA", "KB PAUD AZZAHRA 2", "KB PAUD BABUSALAM", "KB PAUD BERINGIN AGUNG", "KB PAUD BERKARYA", "KB PAUD BERSEHATI", "KB PAUD BETHANIA MEDE", "KB PAUD BETHESDA", "KB PAUD BHINEKA", "KB PAUD BINA GENERASI", "KB PAUD BINA TUNAS HARAPAN", "KB PAUD BPD HORIMOI", "KB PAUD BUAH HATI", "KB PAUD BUKIT ZAITUN", "KB PAUD BUNDA LELEANI", "KB PAUD BUNGA BANGSA CERA", "KB PAUD BURANJITA", "KB PAUD CAHAYA HATI IBU", "KB PAUD CORI JAYA", "KB PAUD DABILOHA", "KB PAUD DAHLIA", "KB PAUD DARARONO", "KB PAUD DHARMA WANITA GALELA", "KB PAUD DODARA", "KB PAUD DOKUMALOHA", "KB PAUD EDELWEYS", "KB PAUD EL ROI", "KB PAUD ELIM WOSIA", "KB PAUD ENJEL", "KB PAUD FLOBAMORA", "KB PAUD GENERASI KUANTUM", "KB PAUD GRACIA", "KB PAUD HARAPAN BANGSA PELITA", "KB PAUD HARAPAN BARU", "KB PAUD HARAPAN BUNDA", "KB PAUD HATI BUNDA", "KB PAUD HERO", "KB PAUD HOHIDIAI KAKARA", "KB PAUD HORIGAO 2", "KB PAUD HORIMOI", "KB PAUD IKTHUS", "KB PAUD IMANUEL", "KB PAUD INDAH KALI PITU", "KB PAUD KANANGA", "KB PAUD KARMEL", "KB PAUD KASIH", "KB PAUD KASIH ARMITA", "KB PAUD KASIH BUNDA", "KB PAUD KASIH BUNDA", "KB PAUD KASIH IBU KUPA - KUPA", "KB PAUD KRISTEN GEORGE RORIWO", "KB PAUD LAHAMAWAY", "KB PAUD LAPI", "KB PAUD LESTARI", "KB PAUD MAGALIHO INO", "KB PAUD MAKA DUSUNG MALOA", "KB PAUD MAKATANOAN", "KB PAUD MALOHA IGOBULA", "KB PAUD MELATI", "KB PAUD MIA NGONGANO", "KB PAUD MINISINYIA", "KB PAUD MIYA GINA", "KB PAUD MIYALOHA", "KB PAUD MUKTITAMA", "KB PAUD MUTIARA", "KB PAUD MUTIARA", "KB PAUD MUTIARA HATI", "KB PAUD NITA DUMA", "KB PAUD NUHARORIWO", "KB PAUD O,WOWANGO", "KB PAUD PELANGI", "KB PAUD PELITA", "KB PAUD PERDAMAIAN", "KB PAUD PERISAI KARUNIA", "KB PAUD PUCUK KEMBANG", "KB PAUD PUPUPI", "KB PAUD PUTU PUTRAYASA", "KB PAUD R. A KARTINI", "KB PAUD RAJAWALI", "KB PAUD SARPISA CENTER", "KB PAUD SATU HATI", "KB PAUD SERUNI", "KB PAUD SILO TOMAHALU", "KB PAUD SINAR BARU", "KB PAUD SINAR KASIH BALE", "KB PAUD SINAR KASIH SAMUDA", "KB PAUD SOASIO MANGONGANO", "KB PAUD TABOBO PERMATA", "KB PAUD TALITAKUMI", "KB PAUD TANGAN PENGHARAPAN", "KB PAUD TERPADU SION", "KB PAUD TUMBUH MEKAR", "KB PAUD TUNAS ANUGERAH 2", "KB PAUD TUNAS BANGSA", "KB PAUD TUNAS BANGSA", "KB PAUD TUNAS BANGSA GAYOK", "KB PAUD TUNAS BARU NGOALI", "KB PAUD TUNAS DESAKU", "KB PAUD TUNAS HARAPAN TOGASA", "KB PAUD TUNAS MUDA MOMOJIU", "KB PAUD WORIO TATE", "KB PAUD WOYA MAKOAI", "KB POMAKOMOTE NGIDIHO", "KB SATU DALAM KASIH", "KB SINAR HARAPAN PARSEBA", "KB SOLA GRACIA", "KELOMPOK BERMAIN (KB) NURUL YAQIN", "KELOMPOK BERMAIN ANUGERAH TOBE", "KELOMPOK BERMAIN CERIA", "KELOMPOK BERMAIN EMBUN HERMON", "KELOMPOK BERMAIN GEMILANG", "KELOMPOK BERMAIN PAUD NEGERI KUPA-KUPA", "KELOMPOK BERMAIN PAUD SEHATI TODOKUIHA", "KELOMPOK BERMAIN PERMATA BUNDA", "KELOMPOK BERMAIN TUNAS BANGSA", "PAUD AIR TERJUN", "PAUD AL - ISLAH", "PAUD BAKTI 1", "PAUD BUKIT SION", "PAUD CINTA DAMAI TOLIWANG", "PAUD DALYES BORI", "PAUD EBEN HAEZER", "PAUD EPIPHANIA", "PAUD GALED", "PAUD GENERASI CERDAS", "PAUD HOHIDIAI", "PAUD KARUNIA BUNDA", "PAUD KASIH BERSAUDARA", "PAUD KASIH IBU TOLIWANG", "PAUD KUSU MARAHAI", "PAUD LINA PUTERA", "PAUD MANGGALA PERKASA", "PAUD MORENE", "PAUD NIA INO LA WO MADOTOKO B", "PAUD NIA INO LA WO MADOTOKO B", "PAUD NIMILEGA", "PAUD NURUL JANNAH", "PAUD PANCARAN KASIH II", "PAUD PERISAI KASIH", "PAUD QUEEN GLORY", "PAUD REHOBOTH GAMHOKU", "PAUD SENTRUM LEMBAH KEMULIAAN TOBELO", "PAUD SOLA GRACIA", "PAUD TAMAN ILMU", "PAUD TAOLAS JAYA", "PAUD TOLONGA", "PAUD TUADA PALI", "PAUD TUNAS BANGSA LIMAU", "PAUD WALEGA WORIWO", "PPAUD ARRAHMAN", "PPAUD AT - TAQWA", "PPAUD AZZAHRA I", "PPAUD DALIMA", "PPAUD DULOS", "PPAUD HIMOMIKOLI", "PPAUD LAHAIROI", "PPAUD MEKAR", "PPAUD MEKAR WKO", "PPAUD MIYA NGONGANO 1", "PPAUD TONGONE", "PPAUD WAYAMATO", "PPAUD WOYAMINO", "SPS PAUD AISYAH", "SPS PAUD BARU MEKAR", "SPS PAUD DALUKIHA", "SPS PAUD DHARMA WANITA TOBELO", "SPS PAUD GEMBIRA", "SPS PAUD GETSEMANI", "SPS PAUD HANDAYANI", "SPS PAUD HARAPAN BANGSA", "SPS PAUD IMANUEL GAMSUNGI 2", "SPS PAUD JATI LUHUR", "SPS PAUD JOBUBU", "SPS PAUD KAPITA ILO", "SPS PAUD KASIH BUNDA TUNUO", "SPS PAUD KASIH IBU", "SPS PAUD LIGI - LIGI", "SPS PAUD MELATI", "SPS PAUD MULIA DAGASULI", "SPS PAUD NUSANTARA GOSOWONG", "SPS PAUD NUSANTARA GOSOWONG", "SPS PAUD PONDOK DAUN", "SPS PAUD RORIWO", "SPS PAUD RUKUN BPD", "SPS PAUD TOGIHORO", "SPS PAUD TUNAS BANGSA", "SPS PAUD TUNAS HARAPAN 02", "SPS PAUD YASIN GAMSUNGI", "TAMAN KANAK KANAK GENERASI KUANTUM", "TAMAN KANAK-KANAK KAIROS SAMUDA", "TK ABADI GAMSUNGI", "TK ADVENT BORI", "TK AISYAH SOASIO", "TK AL-HIDAYAH", "TK AL-HIKMAH GALAO", "TK ALKHAIRAAT GORUA SELATAN", "TK ALKHAIRAAT TOBELO", "TK AR RAHMAN", "TK BETHESDA", "TK BINA GENERASI", "TK BPD HORIMOI", "TK BUKIT ZAITUN", "TK CINTA DAMAI TOLIWANG", "TK DHARMA WANITA KAO", "TK DHARMA WANITA SOA SIO", "TK DHARMA WANITA TOBELO", "TK DODARA DOKULAMO", "TK EFRATA EFI EFI", "TK EFRATA TONUO", "TK EKLESIA DORO", "TK ELIM GURA", "TK ELIM WOSIA TANJUNG NIARA", "TK EPHIPANIA BORI", "TK ESTER", "TK EXODUS GAMLAHA", "TK HALMAHERA KIDS SCHOOL", "TK HANDAYANI", "TK HARAPAN BANGSA", "TK HARAPAN BANGSA PELITA", "TK HARAPAN BARU PITAGO", "TK HATI BUNDA GOSOMA", "TK HILO TOMAHALU", "TK HOHIDIAI", "TK HOHIDIAI", "TK HORIWO KUSURI", "TK IKHTHUS WARI", "TK IMANUEL GAMSUNGI", "TK INDAH KALI PITU", "TK JATI LUHUR", "TK KARMEL", "TK KARTIKA JAYA", "TK KASIH ARMITA", "TK KASIH IBU KUPA - KUPA", "TK KASIH IBU TOLIWANG", "TK KASIH INDAH", "TK KRISTEN TUNAS ANUGERAH PLUS GAMSUNGI", "TK LAHAMAWAY", "TK LESTARI METI", "TK MANGGALA PERKASA", "TK MATAHARI TERBIT", "TK MEKAR TOLABIT", "TK MEKAR WKO", "TK MORIA PITU", "TK MUKTITAMA MAKARTI", "TK MUTIARA", "TK NUHARORIWO GAMLAHA", "TK PANCARAN KASIH", "TK PELANGI KASIH", "TK PELANGI KASIH PACA", "TK PEMBINA", "TK PERISAI KARUNIA", "TK PERTIWI PEDIWANG", "TK PUTU PUTRAYASA", "TK RAJAWALI", "TK REHOBOTH GAMHOKU", "TK RK GONZALO VELOSO GURA", "TK SININGA MOI", "TK SOLA GRACIA", "TK TALITAKUMI DARU", "TK TANGAN PENGHARAPAN SOAMAETEK", "TK TERPADU TUNAS BANGSA"
+            ],
+            "Sekolah SD": [
+                "SD ADVENT BORI", "SD ADVENT PUNE", "SD AL KHAIRAAT TOBELO", "SD ALKHAIRAAT 2 TOBELO", "SD ALKHAIRAAT KAO", "SD AN NUR GURA", "SD GMIH 1 TOBELO", "SD GMIH 2 TOBELO", "SD GMIH 3 TOBELO", "SD GMIH 4 TOBELO", "SD GMIH ASIMIRO", "SD GMIH BIANG", "SD GMIH BOBALE", "SD GMIH DARU", "SD GMIH DOKULAMO", "SD GMIH DORO", "SD GMIH DORUME", "SD GMIH DOWONGGILA", "SD GMIH DUMA", "SD GMIH EFI-EFI", "SD GMIH GAMHOKU", "SD GMIH GAMLAHA", "SD GMIH GORUA", "SD GMIH IGO", "SD GMIH KAI", "SD GMIH KAILUPA", "SD GMIH KAKARA A", "SD GMIH KAKARA B", "SD GMIH KAPA KAPA", "SD GMIH KATANA", "SD GMIH KUMO", "SD GMIH KUPA-KUPA", "SD GMIH LELESENG", "SD GMIH LINA INO", "SD GMIH MAHIA", "SD GMIH MAMUYA", "SD GMIH MAWEA", "SD GMIH METI", "SD GMIH PACA", "SD GMIH PEDIWANG", "SD GMIH PITU", "SD GMIH POSI POSI", "SD GMIH ROKO", "SD GMIH RUKO", "SD GMIH SAMUDA", "SD GMIH SOAKONORA", "SD GMIH SOAMAETEK", "SD GMIH SOASANGAJI DIM DIM", "SD GMIH SOATABARU", "SD GMIH SUPU", "SD GMIH TOBE", "SD GMIH WKO", "SD GMIH WOSIA", "SD HEIN NAMOTEMO", "SD INPRES 1 NGOFAKIAHA", "SD INPRES 1 TOBELO", "SD INPRES 3 NGOFAKIAHA", "SD INPRES 3 WOSIA", "SD INPRES AKESAHU", "SD INPRES APULEA", "SD INPRES BALE", "SD INPRES BALISOSANG", "SD INPRES BERTINGKAT", "SD INPRES BIANG A", "SD INPRES BIANG B", "SD INPRES CERA", "SD INPRES DODOWO", "SD INPRES DOITIA", "SD INPRES DUM DUM SAMAT", "SD INPRES GAMHOKU", "SD INPRES GAMSUNGI", "SD INPRES GAMSUNGI 2", "SD INPRES GONGA", "SD INPRES GORUA", "SD INPRES GOTALAMO", "SD INPRES JIKOLAMO", "SD INPRES KAO", "SD INPRES KUKUMUTUK", "SD INPRES KUPA-KUPA", "SD INPRES KUSU", "SD INPRES KUSURI", "SD INPRES LAINOMA", "SD INPRES LELEOTO", "SD INPRES LELESENG", "SD INPRES MAILOA", "SD INPRES MAKETE", "SD INPRES MAMOJIU", "SD INPRES MAMUYA", "SD INPRES MAWEA", "SD INPRES METI", "SD INPRES NGAIMADODERA", "SD INPRES NGAJAM", "SD INPRES PEDIWANG", "SD INPRES PELERI", "SD INPRES PELITA", "SD INPRES POPON", "SD INPRES POSI-POSI", "SD INPRES SALIMULI", "SD INPRES SAMSUMA", "SD INPRES SASUR", "SD INPRES SENTER MALIFUT", "SD INPRES SIMAU", "SD INPRES SOAKONORA", "SD INPRES SOASIO", "SD INPRES SUKAMAJU", "SD INPRES TAFASOHO", "SD INPRES TAGONO", "SD INPRES TAHANE", "SD INPRES TAKOME GAMLAMO", "SD INPRES TALAGA PACA", "SD INPRES TAPE JERE", "SD INPRES TATE", "SD INPRES TERU TERU", "SD INPRES TOGAWA", "SD INPRES TOGOLIUA", "SD INPRES TOLIWANG A", "SD INPRES TOLIWANG B", "SD INPRES TOLIWANG C", "SD INPRES TOLIWANG D", "SD INPRES TOLIWANG E", "SD INPRES TOLONUO", "SD INPRES TOMABARU BOBAWA", "SD INPRES TUNUO", "SD INPRES UPA", "SD INPRES UPT TOGOLIUA", "SD INPRES WARI", "SD INPRES WATETO", "SD INPRES WOSIA", "SD INPRES YARO", "SD ISLAM TERPADU AL-KHAIRAAT TOBELO", "SD ISLAMIYAH 1 TOBELO", "SD ISLAMIYAH 2 GALAO", "SD ISLAMIYAH ALFI ALFIYAH WORIMOI", "SD KGBI LELEOTO", "SD KRISTEN TUNAS ANUGERAH TOBELO", "SD MUHAMMADIYAH 1 IGOBULA", "SD MUHAMMADIYAH 2 IGOBULA", "SD MUHAMMADIYAH 3 TOGAWA", "SD MUHAMMADIYAH TOLONUO", "SD NASKAT B. T. 1 TOBELO", "SD NASKAT B. T. 2 TOBELO", "SD NASKAT B. T. 3 TOBELO", "SD NEGERI 1 TOBELO", "SD NEGERI 2 TOBELO", "SD NEGERI 3 TOBELO", "SD NEGERI 4 TOBELO", "SD NEGERI 5 TOBELO", "SD NEGERI AKELAMO CIBOK", "SD NEGERI BAILENGIT", "SD NEGERI BERINGIN GOSOWONG", "SD NEGERI BERINGIN JAYA", "SD NEGERI BIRINOA", "SD NEGERI BOBANEIGO", "SD NEGERI BOBISINGO", "SD NEGERI BORI", "SD NEGERI BOULAMO", "SD NEGERI DAGASULI", "SD NEGERI DAMA", "SD NEGERI DARU", "SD NEGERI DEDETA", "SD NEGERI DORO", "SD NEGERI DOWONGIMAITI", "SD NEGERI DUM-DUM PANTAI", "SD NEGERI FITAKO", "SD NEGERI GAYOK", "SD NEGERI GISI", "SD NEGERI GONGA PANTE", "SD NEGERI GULO", "SD NEGERI KAI", "SD NEGERI KAO", "SD NEGERI KEKE", "SD NEGERI KOBOK PAPAKA", "SD NEGERI KUSU LOVRA", "SD NEGERI KUSUMA KALIPITU", "SD NEGERI LALONGA", "SD NEGERI LEMAHINO", "SD NEGERI LIMAU", "SD NEGERI LUARI", "SD NEGERI MEDE", "SD NEGERI NGIDIHO", "SD NEGERI NGOALI", "SD NEGERI PACA", "SD NEGERI PACAO", "SD NEGERI PATANG", "SD NEGERI PITAGO", "SD NEGERI POPILO", "SD NEGERI RANGO-RANGO", "SD NEGERI SALUBE", "SD NEGERI SALUTA", "SD NEGERI SEKI", "SD NEGERI SOASIO", "SD NEGERI SOSOL", "SD NEGERI TAGALAYA", "SD NEGERI TAKIMO", "SD NEGERI TIOUA", "SD NEGERI TOBO TOBO", "SD NEGERI TOBOULAMO", "SD NEGERI TOGASA", "SD NEGERI TOGIHORO", "SD NEGERI TOLABIT", "SD NEGERI TOLIWANG", "SD NEGERI TOMAHALU", "SD NEGERI TUAKARA", "SD NEGERI TUGUIS PARSEBA", "SD NEGERI TUTUMALOLEO", "SD NEGERI WANGEOTAK", "SD NEGERI WANGONGIRA", "SD NEGERI WARINGIN LELEWI", "SD NEGERI WARUDU", "SD RAHAI", "SD RAJAWALI", "SDN INPRES DUM DUM GOTA", "SDS MANGGALA PERKASA"
+            ],
+            "Sekolah SMP": [
+                "SMP NEGERI 01 HALMAHERA UTARA", "SMP NEGERI 02 HALMAHERA UTARA", "SMP NEGERI 03 HALMAHERA UTARA", "SMP NEGERI 04 HALMAHERA UTARA", "SMP NEGERI 05 HALMAHERA UTARA", "SMP NEGERI 06 HALMAHERA UTARA", "SMP NEGERI 07 HALMAHERA UTARA", "SMP NEGERI 08 HALMAHERA UTARA", "SMP NEGERI 09 HALMAHERA UTARA", "SMP NEGERI 10 HALMAHERA UTARA", "SMP NEGERI 11 HALMAHERA UTARA", "SMP NEGERI 12 HALMAHERA UTARA", "SMP NEGERI 13 HALMAHERA UTARA", "SMP NEGERI 14 HALMAHERA UTARA", "SMP NEGERI 15 HALMAHERA UTARA", "SMP NEGERI 16 HALMAHERA UTARA", "SMP NEGERI 17 HALMAHERA UTARA", "SMP NEGERI 18 HALMAHERA UTARA", "SMP NEGERI 19 HALMAHERA UTARA", "SMP NEGERI 20 HALMAHERA UTARA", "SMP NEGERI 22 HALMAHERA UTARA", "SMP NEGERI 23 HALMAHERA UTARA", "SMP NEGERI 24 HALMAHERA UTARA", "SMP NEGERI 25 HALMAHERA UTARA", "SMP NEGERI 26 HALMAHERA UTARA", "SMP NEGERI 27 HALMAHERA UTARA", "SMP NEGERI 28 HALMAHERA UTARA", "SMP NEGERI 29 HALMAHERA UTARA", "SMP NEGERI 4 SATU ATAP TOLIWANG", "SMP NEGERI 5 SATU ATAP LALONGA", "SMP NEGERI 5 SATU ATAP TOLONUO", "SMP NEGERI 6 SATU ATAP KAKARA", "SMP NEGERI SATAP TOBO TOBO", "SMP NEGERI SATU ATAP BOBALE", "SMP NEGERI SATU ATAP BOBANEIGO", "SMP NEGERI SATU ATAP CERA", "SMP NEGERI SATU ATAP FITAKO", "SMP NEGERI SATU ATAP KUSURI", "SMP NEGERI SATU ATAP METI", "SMP NEGERI SATU ATAP NGOALI", "SMP NEGERI SATU ATAP TOBOULAMO", "SMP ADVENT BORI", "SMP ADVENT TOBELO", "SMP AL BASYIRIAH GALAO", "SMP AL BASYIRIAH TATE", "SMP ALEGAN TOBELO", "SMP ALIMAN GALAO GISI", "SMP ALKHAIRAAT TOBELO", "SMP BINA KARYA TOBELO", "SMP BINA TALENTA DOWONGGILA", "SMP BINA TALENTA ROKO", "SMP BINTANG LAUT TOBELO", "SMP BPD NGEBA PASIR PUTIH", "SMP CINTA DAMAI", "SMP GLOBAL PASIFIC", "SMP GOTONG ROYONG TOBELO", "SMP HAWA DJURUMUDI HARUM", "SMP HEIN NAMOTEMO", "SMP ISLAM DAGASULI", "SMP ISLAM TERPADU ALKHAIRAAT LUARI", "SMP ISLAM TOBELO", "SMP KRISTEN DORUME", "SMP KRISTEN GALELA", "SMP KRISTEN GEORGE RORIWO", "SMP KRISTEN PEDIWANG", "SMP KRISTEN SOAMAETEK", "SMP KRISTEN TOBELO", "SMP MANGGALA PERKASA", "SMP MAREN TOBELO", "SMP MUH. WARINGIN LAMO", "SMP MUHAMMADIYAH GALELA", "SMP MUHAMMADYAH TOBELO", "SMP NASIONAL GALELA SELATAN", "SMP NUSANTARA TOBELO", "SMP RAHAI", "SMP TUNAS BANGSA HORIMOI", "SMPS LABORATORIUM UNIERA"
+            ],
+            "Gugus TK/PAUD": [
+                "TK/PAUD Gugus Tobelo 1", "TK/PAUD Gugus Tobelo 2", "TK/PAUD Gugus Tobelo Utara", "TK/PAUD Gugus Tobelo Tengah", "TK/PAUD Gugus Tobelo Selatan", "TK/PAUD Gugus Tobelo Timur", "TK/PAUD Gugus Tobelo Barat", "TK/PAUD Gugus Galela", "TK/PAUD Gugus Galela Selatan", "TK/PAUD Gugus Galela Barat", "TK/PAUD Gugus Galela Utara", "TK/PAUD Gugus Kao Utara", "TK/PAUD Gugus Kao", "TK/PAUD Gugus Kao Barat", "TK/PAUD Gugus Kao Teluk", "TK/PAUD Gugus Malifut", "TK/PAUD Gugus Loloda Utara", "TK/PAUD Gugus Loloda Kepulauan"
+            ],
+            "Gugus SD": [
+                "SD Gugus 1 Tobelo ", "SD Gugus 2 Tobelo ", "SD Gugus 3 Tobelo ", "SD Gugus 4 Tobelo Utara", "SD Gugus 5 Tobelo Tengah", "SD Gugus 6 Tobelo Selatan", "SD Gugus 7 Tobelo Selatan", "SD Gugus 8 Tobelo Timur", "SD Gugus 9 Tobelo Barat", "SD Gugus 10 Galela", "SD Gugus 11 Galela Selatan", "SD Gugus 12 Galela Barat", "SD Gugus 13 Galela Utara", "SD Gugus 14 Galela Utara", "SD Gugus 15 Kao Utara", "SD Gugus 16 Kao Utara", "SD Gugus 17 Kao", "SD gugus 18 Kao", "SD Gugus 19 Kao Barat", "SD Gugus 20 Kao Barat", "SD Gugus 21 Kao Barat", "SD Gugus 22 Malifut", "SD Gugus 23 Malifut", "SD Gugus 24 Kao Teluk", "SD Gugus 25 Loloda Utara", "SD Gugus 26 Loloda Utara", "SD Gugus 27 Loloda Utara", "SD Gugus 28 Loloda Utara"
+            ],
+            "Klaster SMP": [
+                "SMP Klaster Tobelo 1", "SMP Klaster Tobelo 2", "SMP Klaster Tobelo 3", "SMP Klaster Tobelo 4", "SMP Klaster Galela", "SMP Klaster Loloda Utara", "SMP Klaster Loloda Kepulauan", "SMP Klaster Kao Barat", "SMP Klaster Kao & Kao Utara", "SMP Klaster Kao Teluk & Malifut"
+            ],
+            "Antar Sekolah SD": [
+                "Kelompok 01 SD", "Kelompok 02 SD", "Kelompok 03 SD", "Kelompok 04 SD", "Kelompok 05 SD", "Kelompok 06 SD", "Kelompok 07 SD", "Kelompok 08 SD", "Kelompok 09 SD", "Kelompok 10 SD", "Kelompok 11 SD", "Kelompok 12 SD", "Kelompok 13 SD", "Kelompok 14 SD", "Kelompok 15 SD", "Kelompok 16 SD", "Kelompok 17 SD", "Kelompok 18 SD", "Kelompok 19 SD", "Kelompok 20 SD", "Kelompok 21 SD", "Kelompok 22 SD", "Kelompok 23 SD", "Kelompok 24 SD", "Kelompok 25 SD", "Kelompok 26 SD", "Kelompok 27 SD", "Kelompok 28 SD", "Kelompok 29 SD", "Kelompok 30 SD", "Kelompok 31 SD", "Kelompok 32 SD", "Kelompok 33 SD", "Kelompok 34 SD", "Kelompok 35 SD", "Kelompok 36 SD", "Kelompok 37 SD", "Kelompok 38 SD", "Kelompok 39 SD", "Kelompok 40 SD", "Kelompok 41 SD", "Kelompok 42 SD", "Kelompok 43 SD", "Kelompok 44 SD", "Kelompok 45 SD", "Kelompok 46 SD", "Kelompok 47 SD", "Kelompok 48 SD", "Kelompok 49 SD"
+            ],
+            "Antar Sekolah SMP": [
+                "Kelompok 01 SMP", "Kelompok 02 SMP", "Kelompok 03 SMP", "Kelompok 04 SMP", "Kelompok 05 SMP", "Kelompok 06 SMP", "Kelompok 07 SMP", "Kelompok 08 SMP", "Kelompok 09 SMP", "Kelompok 10 SMP", "Kelompok 11 SMP", "Kelompok 12 SMP", "Kelompok 13 SMP", "Kelompok 14 SMP", "Kelompok 15 SMP", "Kelompok 16 SMP", "Kelompok 17 SMP", "Kelompok 18 SMP", "Kelompok 19 SMP", "Kelompok 20 SMP", "Kelompok 21 SMP"
+            ]
+        };
+
+        const namaKombelInput = document.getElementById('namaKombel');
+        const kombelDropdown = document.getElementById('kombelDropdown');
+        let currentKombelList = [];
+
+        function updateKombelOptions() {
+            const jenisKombel = document.getElementById("jenisKombel").value;
+            namaKombelInput.value = "";
+            
+            if (jenisKombel && dataKombel[jenisKombel]) {
+                currentKombelList = dataKombel[jenisKombel];
+            } else {
+                currentKombelList = [];
+            }
+            renderDropdownOptions(currentKombelList);
+        }
+
+        function filterKombelOptions() {
+            const keyword = document.getElementById("namaKombel").value.toLowerCase();
+            const filteredList = currentKombelList.filter(item => item.toLowerCase().includes(keyword));
+            renderDropdownOptions(filteredList);
+            showKombelDropdown();
+        }
+
+        function renderDropdownOptions(list) {
+            kombelDropdown.innerHTML = "";
+            
+            if (list.length === 0) {
+                kombelDropdown.innerHTML = '<div class="p-3 text-xs text-slate-500 text-center">Kombel tidak ditemukan</div>';
+                return;
+            }
+            
+            list.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer border-b border-slate-50 last:border-0";
+                div.textContent = item;
+                div.onclick = () => {
+                    document.getElementById("namaKombel").value = item;
+                    kombelDropdown.classList.add("hidden");
+                };
+                kombelDropdown.appendChild(div);
+            });
+        }
+
+        function showKombelDropdown() {
+            if(currentKombelList.length > 0) {
+                kombelDropdown.classList.remove("hidden");
+            }
+        }
+
+        document.addEventListener("click", function(event) {
+            if (event.target !== namaKombelInput && !kombelDropdown.contains(event.target)) {
+                kombelDropdown.classList.add("hidden");
+            }
+        });
+
+        // Fungsi Format Waktu
+        function formatJam(jamStr) {
+            if (!jamStr) return '';
+            if (typeof jamStr === 'string' && (jamStr.includes('1899') || jamStr.includes('GMT'))) {
+                const dateObj = new Date(jamStr);
+                if (!isNaN(dateObj.getTime())) {
+                    const jam = String(dateObj.getHours()).padStart(2, '0');
+                    const menit = String(dateObj.getMinutes()).padStart(2, '0');
+                    return `${jam}.${menit}`;
+                }
+            }
+            return String(jamStr).substring(0, 5).replace(':', '.');
+        }
+
+        function calculateDuration() {
+            const mulai = document.getElementById('jamMulai').value;
+            const selesai = document.getElementById('jamSelesai').value;
+            const durasiText = document.getElementById('durasiText');
+
+            if (mulai && selesai) {
+                const start = new Date(`1970-01-01T${mulai}`);
+                const end = new Date(`1970-01-01T${selesai}`);
+                let diff = end.getTime() - start.getTime();
+                
+                if (diff < 0) {
+                    durasiText.innerText = "Error (Jam Selesai < Jam Mulai)";
+                    durasiText.classList.add('text-red-500');
+                    return;
+                }
+
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                durasiText.innerText = `${hours} Jam ${mins} Menit`;
+                durasiText.classList.remove('text-red-500');
+            } else {
+                durasiText.innerText = "0 J 0 M";
+            }
+        }
+
+        function calculatePercentage() {
+            const target = parseFloat(document.getElementById('targetKehadiran').value) || 0;
+            const realisasi = parseFloat(document.getElementById('realisasiKehadiran').value) || 0;
+            const persentaseText = document.getElementById('persentaseText');
+
+            if (target > 0) {
+                let percent = (realisasi / target) * 100;
+                if (percent > 100) percent = 100;
+                
+                persentaseText.innerText = `${percent.toFixed(1)}%`;
+                
+                if (percent < 50) persentaseText.className = "font-bold text-red-600 text-base";
+                else if (percent < 80) persentaseText.className = "font-bold text-amber-600 text-base";
+                else persentaseText.className = "font-bold text-emerald-600 text-base";
+            } else {
+                persentaseText.innerText = "0%";
+                persentaseText.className = "font-bold text-slate-800 text-base";
+            }
+        }
+
+        function checkDriveLink() {
+            const linkInput = document.getElementById('linkDaftarHadir').value;
+            const warningDiv = document.getElementById('aksesWarning');
+            const konfirmasiCheckbox = document.getElementById('konfirmasiAkses');
+
+            if (linkInput.toLowerCase().includes('drive.google.com')) {
+                warningDiv.classList.remove('hidden');
+                konfirmasiCheckbox.setAttribute('required', 'true');
+            } else {
+                warningDiv.classList.add('hidden');
+                konfirmasiCheckbox.removeAttribute('required');
+                konfirmasiCheckbox.checked = false;
+            }
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('btnSubmitForm');
+            const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+            
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Laporan...';
+                submitBtn.disabled = true;
+            }
+
+            try {
+                const formData = {
+                    id: new Date().getTime(),
+                    timestamp: new Date().toLocaleString('id-ID'),
+                    kecamatan: document.getElementById('kecamatan').value,
+                    jenisKombel: document.getElementById('jenisKombel').value,
+                    namaKombel: document.getElementById('namaKombel').value,
+                    namaResponden: document.getElementById('namaResponden').value,
+                    jabatan: document.getElementById('jabatan').value,
+                    tanggalKegiatan: document.getElementById('tanggalKegiatan').value,
+                    jamMulai: document.getElementById('jamMulai').value,
+                    jamSelesai: document.getElementById('jamSelesai').value,
+                    durasi: document.getElementById('durasiText').innerText,
+                    topik: document.getElementById('topik').value,
+                    tujuan: document.getElementById('tujuan').value,
+                    targetPeserta: document.getElementById('targetPeserta').value,
+                    aktivitasUtama: document.getElementById('aktivitasUtama').value,
+                    sumberDana: document.getElementById('sumberDana').value,
+                    namaFasilitator: document.getElementById('namaFasilitator').value,
+                    instansiFasilitator: document.getElementById('instansiFasilitator').value,
+                    targetKehadiran: document.getElementById('targetKehadiran').value,
+                    realisasiKehadiran: document.getElementById('realisasiKehadiran').value,
+                    persentase: document.getElementById('persentaseText').innerText,
+                    linkFacebook: document.getElementById('linkFacebook').value,
+                    catatanKegiatan: document.getElementById('catatanKegiatan').value || '-',
+                    linkDaftarHadir: document.getElementById('linkDaftarHadir').value
+                };
+
+                if (GOOGLE_SCRIPT_URL) {
+                    try {
+                        await fetch(GOOGLE_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify(formData)
+                        });
+                    } catch (netErr) {
+                        console.warn("Post mode direct to script, fallback local update:", netErr);
+                    }
+                }
+
+                submittedReports.unshift(formData);
+                localStorage.setItem('penaHalutData', JSON.stringify(submittedReports));
+
+                // Modal Ringkasan Sukses
+                document.getElementById('resKecamatan').innerText = formData.kecamatan;
+                document.getElementById('resKombel').innerText = formData.namaKombel;
+                document.getElementById('resResponden').innerText = `${formData.namaResponden} (${formData.jabatan})`;
+                document.getElementById('resWaktu').innerText = `${formData.tanggalKegiatan} [${formatJam(formData.jamMulai)} - ${formatJam(formData.jamSelesai)} (${formData.durasi})]`;
+                document.getElementById('resTopik').innerText = formData.topik;
+                document.getElementById('resKehadiran').innerText = `${formData.realisasiKehadiran} dari ${formData.targetKehadiran} (${formData.persentase})`;
+
+                document.getElementById('successModal').classList.remove('hidden');
+
+                // Reset Isian Form
+                document.getElementById('kombelForm').reset();
+                document.getElementById('durasiText').innerText = "0 J 0 M";
+                document.getElementById('persentaseText').innerText = "0%";
+                document.getElementById('aksesWarning').classList.add('hidden');
+
+                showToast("Laporan berhasil terkirim ke sistem!", "success");
+
+            } catch (err) {
+                console.error("Error submit form:", err);
+                showToast("Gagal mengirim laporan. Silakan periksa koneksi Anda.", "error");
+            } finally {
+                if (submitBtn) {
+                    submitBtn.innerHTML = originalBtnHtml;
+                    submitBtn.disabled = false;
+                }
+            }
+        }
+
+        async function autoFetchFromGoogleSheet() {
+            if (!GOOGLE_SCRIPT_URL) return;
+
+            const syncStatusText = document.getElementById('syncStatusText');
+            if (syncStatusText) syncStatusText.innerText = "Menyingkronkan Google Sheet...";
+
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                if (response.ok) {
+                    const remoteData = await response.json();
+                    if (Array.isArray(remoteData) && remoteData.length > 0) {
+                        submittedReports = remoteData;
+                        localStorage.setItem('penaHalutData', JSON.stringify(submittedReports));
+                        renderRekapanData();
+                        renderStatistikData();
+                        if (syncStatusText) syncStatusText.innerText = "Terhubung & Terkini";
+                    } else {
+                        if (syncStatusText) syncStatusText.innerText = "Auto-Sync Google Sheet Aktif";
+                    }
+                } else {
+                    if (syncStatusText) syncStatusText.innerText = "Auto-Sync Google Sheet Aktif";
+                }
+            } catch (e) {
+                console.warn("Auto-sync background check notice:", e);
+                if (syncStatusText) syncStatusText.innerText = "Mode Offline / Lokal";
+            }
+        }
+
+        function renderRekapanData() {
+            const tbody = document.getElementById('rekapanTableBody');
+            const emptyState = document.getElementById('emptyRekapanState');
+            if (!tbody) return;
+
+            const filterKec = document.getElementById('filterKecamatan')?.value.toLowerCase() || '';
+            const filterJenis = document.getElementById('filterJenisKombel')?.value.toLowerCase() || '';
+            const filterNama = document.getElementById('filterNamaKombel')?.value.toLowerCase().trim() || '';
+
+            const filtered = submittedReports.filter(item => {
+                const matchKec = !filterKec || (item.kecamatan && item.kecamatan.toLowerCase() === filterKec);
+                const matchJenis = !filterJenis || (item.jenisKombel && item.jenisKombel.toLowerCase() === filterJenis);
+                const matchNama = !filterNama || (item.namaKombel && item.namaKombel.toLowerCase().includes(filterNama));
+                return matchKec && matchJenis && matchNama;
+            }).sort((a, b) => b.id - a.id);
+
+            // Update Header Counters
+            document.getElementById('statTotalPengirim').innerText = submittedReports.length;
+            const uniqueKec = new Set(submittedReports.map(i => i.kecamatan)).size;
+            document.getElementById('statKecamatanAktif').innerText = uniqueKec;
+            const uniqueKombel = new Set(submittedReports.map(i => i.namaKombel)).size;
+            document.getElementById('statKombelAktif').innerText = uniqueKombel;
+            const totalHadir = submittedReports.reduce((acc, i) => acc + (parseInt(i.realisasiKehadiran) || 0), 0);
+            document.getElementById('statTotalPeserta').innerText = totalHadir;
+
+            document.getElementById('filteredCountInfo').innerText = `Menampilkan ${filtered.length} dari ${submittedReports.length} data`;
+
+            tbody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                emptyState?.classList.remove('hidden');
+            } else {
+                emptyState?.classList.add('hidden');
+                filtered.forEach((item, index) => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+                    
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 text-center font-bold text-slate-500">${index + 1}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-800">${item.kecamatan || '-'}</td>
+                        <td class="py-3 px-4 font-bold text-blue-900">${item.namaKombel || '-'}</td>
+                        <td class="py-3 px-4 text-slate-600">${item.jenisKombel || '-'}</td>
+                        <td class="py-3 px-4 text-slate-600">
+                            <div>${item.tanggalKegiatan || '-'}</div>
+                            <div class="text-[10px] text-slate-400">${formatJam(item.jamMulai)} - ${formatJam(item.jamSelesai)} (${item.durasi || ''})</div>
+                        </td>
+                        <td class="py-3 px-4 text-center font-bold text-emerald-600">${item.realisasiKehadiran || 0} / ${item.targetKehadiran || 0} (${item.persentase || '0%'})</td>
+                        <td class="py-3 px-4 text-center">
+                            <button onclick="viewDetail(${item.id})" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold text-[11px] transition">
+                                <i class="fa-solid fa-eye"></i> Detail
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        function viewDetail(id) {
+            const item = submittedReports.find(r => r.id == id);
+            if (!item) return;
+
+            document.getElementById('detRespondenJabatan').innerText = `${item.namaResponden || '-'} (${item.jabatan || '-'})`;
+            document.getElementById('detKombelKecamatan').innerText = `${item.namaKombel || '-'} - Kec. ${item.kecamatan || '-'}`;
+            document.getElementById('detWaktuDurasi').innerText = `${item.tanggalKegiatan || '-'} [${formatJam(item.jamMulai)} - ${formatJam(item.jamSelesai)} (${item.durasi || ''})]`;
+            document.getElementById('detJenisKombel').innerText = item.jenisKombel || '-';
+            document.getElementById('detTopik').innerText = item.topik || '-';
+            document.getElementById('detTujuan').innerText = item.tujuan || '-';
+            document.getElementById('detTargetPeserta').innerText = item.targetPeserta || '-';
+            document.getElementById('detAktivitasUtama').innerText = item.aktivitasUtama || '-';
+            document.getElementById('detSumberDana').innerText = item.sumberDana || '-';
+            document.getElementById('detFasilitator').innerText = `${item.namaFasilitator || '-'} (${item.instansiFasilitator || '-'})`;
+            document.getElementById('detKehadiran').innerText = `${item.realisasiKehadiran || 0} dari ${item.targetKehadiran || 0} orang (${item.persentase || '0%'})`;
+
+            const linkFbEl = document.getElementById('detLinkFb');
+            if (item.linkFacebook) {
+                linkFbEl.href = item.linkFacebook;
+                linkFbEl.classList.remove('pointer-events-none', 'opacity-50');
+            } else {
+                linkFbEl.href = '#';
+                linkFbEl.classList.add('pointer-events-none', 'opacity-50');
+            }
+
+            const linkDHEl = document.getElementById('detLinkDaftarHadir');
+            if (linkDHEl) {
+                if (item.linkDaftarHadir) {
+                    linkDHEl.href = item.linkDaftarHadir;
+                    linkDHEl.classList.remove('pointer-events-none', 'opacity-50');
+                } else {
+                    linkDHEl.href = '#';
+                    linkDHEl.classList.add('pointer-events-none', 'opacity-50');
+                }
+            }
+
+            document.getElementById('detCatatan').innerText = item.catatanKegiatan || '-';
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        function resetRekapanFilters() {
+            if (document.getElementById('filterKecamatan')) document.getElementById('filterKecamatan').value = '';
+            if (document.getElementById('filterJenisKombel')) document.getElementById('filterJenisKombel').value = '';
+            if (document.getElementById('filterNamaKombel')) document.getElementById('filterNamaKombel').value = '';
+            renderRekapanData();
+        }
+
+        function renderStatistikData() {
+            const tbody = document.getElementById('statistikTableBody');
+            const emptyState = document.getElementById('emptyStatistikState');
+            if (!tbody) return;
+
+            const filterKec = document.getElementById('statFilterKecamatan')?.value.toLowerCase() || '';
+            const filterJenis = document.getElementById('statFilterJenisKombel')?.value.toLowerCase() || '';
+            const filterNama = document.getElementById('statFilterNamaKombel')?.value.toLowerCase().trim() || '';
+
+            const map = {};
+
+            submittedReports.forEach(item => {
+                const matchKec = !filterKec || (item.kecamatan && item.kecamatan.toLowerCase() === filterKec);
+                const matchJenis = !filterJenis || (item.jenisKombel && item.jenisKombel.toLowerCase() === filterJenis);
+                const matchNama = !filterNama || (item.namaKombel && item.namaKombel.toLowerCase().includes(filterNama));
+
+                if (matchKec && matchJenis && matchNama) {
+                    const key = `${item.kecamatan || '-'}_${item.jenisKombel || '-'}_${item.namaKombel || '-'}`;
+                    if (!map[key]) {
+                        map[key] = {
+                            kecamatan: item.kecamatan || '-',
+                            jenisKombel: item.jenisKombel || '-',
+                            namaKombel: item.namaKombel || '-',
+                            count: 0
+                        };
+                    }
+                    map[key].count++;
+                }
+            });
+
+            const list = Object.values(map).sort((a, b) => b.count - a.count);
+
+            const totalGrupInfo = document.getElementById('statTotalGrupInfo');
+            if (totalGrupInfo) totalGrupInfo.innerText = `Menampilkan ${list.length} entri kombel`;
+
+            tbody.innerHTML = '';
+
+            if (list.length === 0) {
+                emptyState?.classList.remove('hidden');
+            } else {
+                emptyState?.classList.add('hidden');
+                list.forEach((item, index) => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 text-center font-bold text-slate-500">${index + 1}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-800">${item.kecamatan}</td>
+                        <td class="py-3 px-4 text-slate-600">${item.jenisKombel}</td>
+                        <td class="py-3 px-4 font-bold text-blue-900">${item.namaKombel}</td>
+                        <td class="py-3 px-4 text-center font-black text-blue-600 bg-blue-50/50 rounded-lg">${item.count} Laporan</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        function resetStatistikFilters() {
+            if (document.getElementById('statFilterKecamatan')) document.getElementById('statFilterKecamatan').value = '';
+            if (document.getElementById('statFilterJenisKombel')) document.getElementById('statFilterJenisKombel').value = '';
+            if (document.getElementById('statFilterNamaKombel')) document.getElementById('statFilterNamaKombel').value = '';
+            renderStatistikData();
+        }
+
+        // =======================================================
+        // FUNGSI EXPORT KE EXCEL (XLSX) MENGGUNAKAN SHEETJS
+        // =======================================================
+        function downloadExcelData() {
+            const table = document.getElementById("tabelRekapanData");
+            if(!table) {
+                showToast("Tabel data tidak ditemukan!", "error");
+                return;
+            }
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Data Rekapan"});
+            XLSX.writeFile(wb, "Rekapan_Laporan_Kombel_Halut.xlsx");
+            showToast("File Excel berhasil diunduh!", "success");
+        }
+
+        function downloadStatistikExcelData() {
+            const table = document.getElementById("tabelStatistikData");
+            if(!table) {
+                showToast("Tabel statistik tidak ditemukan!", "error");
+                return;
+            }
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Statistik Agregat"});
+            XLSX.writeFile(wb, "Statistik_Laporan_Kombel_Halut.xlsx");
+            showToast("File Excel Statistik berhasil diunduh!", "success");
+        }
+
+        // Initialize default view
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage('pelaporan');
+            autoFetchFromGoogleSheet();
+        });
+    </script>
+</body>
+</html>
